@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ウェブサイトぐるぐる</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: sans-serif;
+      background: #f0f0f0;
+      overflow: auto;
+    }
+
+    /* ヘッダー（1行） */
+    .header {
+      background: white;
+      padding: 12px 20px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+
+    .header-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .header-item label {
+      font-size: 13px;
+      color: #666;
+      white-space: nowrap;
+    }
+
+    .header-item input {
+      padding: 6px 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+
+    .header-item input[type="number"] {
+      width: 70px;
+    }
+
+    #urlInput {
+      width: 300px;
+      max-width: 40vw;
+    }
+
+    .btn {
+      padding: 6px 12px;
+      background: #0f6be4;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .btn:hover {
+      background: #357abd;
+    }
+
+    .btn-reset {
+      background: #6c757d;
+    }
+
+    .btn-reset:hover {
+      background: #5a6268;
+    }
+
+    .angle-display {
+      background: #333;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 13px;
+      min-width: 100px;
+      text-align: center;
+    }
+
+    .separator {
+      width: 1px;
+      height: 20px;
+      background: #ddd;
+      margin: 0 5px;
+    }
+
+    /* コンテンツエリア */
+    .content-area {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: calc(100vh - 60px);
+      padding: 50px 20px;
+    }
+
+    /* 回転するコンテナ */
+    #rotatable-container {
+      position: relative;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+      transition: transform 0.1s ease-out;
+      overflow: visible;
+    }
+
+    /* iframe */
+    #website-frame {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: white;
+      display: block;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    /* 回転ハンドル（上部中央、外側にはみ出す） */
+    .rotation-handle {
+      position: absolute;
+      top: -50px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
+      height: 60px;
+      background: #0f6be4;
+      border-radius: 50%;
+      cursor: grab;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+      touch-action: none;
+      z-index: 10;
+    }
+
+    .rotation-handle:active {
+      cursor: grabbing;
+    }
+
+    .rotation-handle::before {
+      content: '⟲';
+      font-size: 30px;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="angle-display">
+      <label style="margin-right: 5px;">角度:</label>
+      <input type="number" id="angleInput" value="0" min="-180" max="180" step="1" style="width: 60px; padding: 4px; border: 1px solid #555; border-radius: 3px; background: #444; color: white; font-family: monospace; text-align: center;">
+      <span style="margin-left: 3px;">°</span>
+    </div>
+    
+    <button class="btn btn-reset" onclick="resetRotation()">リセット</button>
+    
+    <div class="separator"></div>
+    
+    <div class="header-item">
+      <label>URL:</label>
+      <input type="text" id="urlInput" placeholder="https://kurajo.ivory.ne.jp/rakugaki_pao" value="https://kurajo.ivory.ne.jp/rakugaki_pao">
+      <button class="btn" onclick="loadWebsite()">読込</button>
+    </div>
+    
+    <div class="separator"></div>
+    
+    <div class="header-item">
+      <label>幅:</label>
+      <input type="number" id="widthInput" value="800" min="100" max="3000" step="10">
+      <label>px</label>
+    </div>
+    
+    <div class="header-item">
+      <label>高さ:</label>
+      <input type="number" id="heightInput" value="1080" min="100" max="3000" step="10">
+      <label>px</label>
+    </div>
+    
+    <button class="btn" onclick="applySize()">サイズ適用</button>
+  </div>
+
+  <div class="content-area">
+    <div id="rotatable-container" style="width: 800px; height: 1080px;">
+      <div class="rotation-handle"></div>
+      <iframe id="website-frame" src="https://kurajo.ivory.ne.jp/rakugaki_pao"></iframe>
+    </div>
+  </div>
+
+  <script>
+    // 要素の取得
+    const container = document.getElementById('rotatable-container');
+    const handle = document.querySelector('.rotation-handle');
+    const angleInput = document.getElementById('angleInput');
+    const iframe = document.getElementById('website-frame');
+    const urlInput = document.getElementById('urlInput');
+    const widthInput = document.getElementById('widthInput');
+    const heightInput = document.getElementById('heightInput');
+
+    // 状態管理
+    let currentAngle = 0;
+    let isDragging = false;
+    let startAngle = 0;
+
+    // スナップの設定
+    const SNAP_THRESHOLD = 5;
+
+    // Webサイト読み込み
+    function loadWebsite() {
+      let url = urlInput.value.trim();
+      
+      if (url && !url.startsWith('http://') && !url.startsWith('https://')) {
+        url = 'https://' + url;
+      }
+      
+      if (url) {
+        iframe.src = url;
+        urlInput.value = url;
+      }
+    }
+
+    // サイズ適用
+    function applySize() {
+      const width = parseInt(widthInput.value);
+      const height = parseInt(heightInput.value);
+      
+      if (width >= 100 && width <= 3000) {
+        container.style.width = width + 'px';
+      }
+      
+      if (height >= 100 && height <= 3000) {
+        container.style.height = height + 'px';
+      }
+    }
+
+    // コンテナの中心座標を取得
+    function getCenter() {
+      const rect = container.getBoundingClientRect();
+      return {
+        x: rect.left + rect.width / 2,
+        y: rect.top + rect.height / 2
+      };
+    }
+
+    // マウス位置から角度を計算
+    function calculateAngle(clientX, clientY) {
+      const center = getCenter();
+      const dx = clientX - center.x;
+      const dy = clientY - center.y;
+      return Math.atan2(dy, dx) * (180 / Math.PI);
+    }
+
+    // スナップ処理
+    function applySnap(angle) {
+      if (Math.abs(angle) <= SNAP_THRESHOLD) {
+        return 0;
+      }else if (Math.abs(angle-90) < SNAP_THRESHOLD) {
+        return 90;
+      }else if (Math.abs(angle+90) < SNAP_THRESHOLD) {
+        return -90;
+      }else if (Math.abs(angle-180) < SNAP_THRESHOLD) {
+        return 180;
+      }else if (Math.abs(angle+180) < SNAP_THRESHOLD) {
+        return -180;
+      }
+      return angle;
+    }
+
+    // 回転を適用
+    function applyRotation(angle) {
+      // 角度を-180〜180の範囲に正規化
+      let normalized = angle;
+      while (normalized > 180) normalized -= 360;
+      while (normalized < -180) normalized += 360;
+      
+      const snappedAngle = applySnap(normalized);
+      currentAngle = angle;  // 元の角度を保持（次回のドラッグ計算用）
+      container.style.transform = `rotate(${snappedAngle}deg)`;
+      angleInput.value = Math.round(snappedAngle);
+    }
+
+    // リセット
+    function resetRotation() {
+      applyRotation(0);
+    }
+
+    // ドラッグ開始
+    handle.addEventListener('pointerdown', (e) => {
+      isDragging = true;
+      startAngle = calculateAngle(e.clientX, e.clientY) - currentAngle;
+      handle.setPointerCapture(e.pointerId);
+      e.preventDefault();
+    });
+
+    // ドラッグ中
+    handle.addEventListener('pointermove', (e) => {
+      if (!isDragging) return;
+      
+      const pointerAngle = calculateAngle(e.clientX, e.clientY);
+      const newAngle = pointerAngle - startAngle;
+      applyRotation(newAngle);
+    });
+
+    // ドラッグ終了（離したときにスナップを強制適用）
+    handle.addEventListener('pointerup', (e) => {
+      isDragging = false;
+      handle.releasePointerCapture(e.pointerId);
+      // ドラッグ終了時に再度スナップを適用
+      applyRotation(currentAngle);
+    });
+
+    // Enterキーで読み込み
+    urlInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        loadWebsite();
+      }
+    });
+
+    // サイズ入力でEnterキー
+    widthInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        applySize();
+      }
+    });
+
+    heightInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        applySize();
+      }
+    });
+
+    // サイズ入力の変更を監視してリアルタイム適用
+    widthInput.addEventListener('input', applySize);
+    heightInput.addEventListener('input', applySize);
+
+    // 角度入力の変更
+    angleInput.addEventListener('input', () => {
+      const angle = parseFloat(angleInput.value);
+      if (!isNaN(angle)) {
+        currentAngle = angle;
+        container.style.transform = `rotate(${angle}deg)`;
+      }
+    });
+
+    angleInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        const angle = parseFloat(angleInput.value);
+        if (!isNaN(angle)) {
+          applyRotation(angle);
+        }
+      }
+    });
+  </script>
+</body>
+</html>
