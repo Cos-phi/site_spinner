@@ -13,7 +13,6 @@
 - Reset angle anytime  
 - Works beautifully with drawing apps like **[rakugaki_pao](https://kurajo.ivory.ne.jp/rakugaki_pao)** ✏️  
 
-
 ## 💡 Example Use
 
 Want to rotate your drawing canvas but your app doesn’t support it?  
