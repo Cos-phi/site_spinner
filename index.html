@@ -152,7 +152,6 @@
     }
 
     .rotation-handle::before {
-      content: '⟲';
       font-size: 30px;
       color: white;
     }
@@ -161,41 +160,41 @@
 <body>
   <div class="header">
     <div class="angle-display">
-      <label style="margin-right: 5px;">角度:</label>
+      <label style="margin-right: 5px;">Angle:</label>
       <input type="number" id="angleInput" value="0" min="-180" max="180" step="1" style="width: 60px; padding: 4px; border: 1px solid #555; border-radius: 3px; background: #444; color: white; font-family: monospace; text-align: center;">
       <span style="margin-left: 3px;">°</span>
     </div>
     
-    <button class="btn btn-reset" onclick="resetRotation()">リセット</button>
+    <button class="btn btn-reset" onclick="resetRotation()">Reset</button>
     
     <div class="separator"></div>
     
     <div class="header-item">
       <label>URL:</label>
       <input type="text" id="urlInput" placeholder="https://kurajo.ivory.ne.jp/rakugaki_pao" value="https://kurajo.ivory.ne.jp/rakugaki_pao">
-      <button class="btn" onclick="loadWebsite()">読込</button>
+      <button class="btn" onclick="loadWebsite()">Load</button>
     </div>
     
     <div class="separator"></div>
     
     <div class="header-item">
-      <label>幅:</label>
+      <label>Width:</label>
       <input type="number" id="widthInput" value="800" min="100" max="3000" step="10">
       <label>px</label>
     </div>
     
     <div class="header-item">
-      <label>高さ:</label>
+      <label>Height:</label>
       <input type="number" id="heightInput" value="1080" min="100" max="3000" step="10">
       <label>px</label>
     </div>
     
-    <button class="btn" onclick="applySize()">サイズ適用</button>
+    <button class="btn" onclick="applySize()">Apply</button>
   </div>
 
   <div class="content-area">
     <div id="rotatable-container" style="width: 800px; height: 1080px;">
-      <div class="rotation-handle"></div>
+      <div class="rotation-handle"><img src="spinhandle.svg" width="42px"></div>
       <iframe id="website-frame" src="https://example.com"></iframe>
     </div>
   </div>
