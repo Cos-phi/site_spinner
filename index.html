@@ -27,6 +27,12 @@
       align-items: center;
       gap: 15px;
       flex-wrap: wrap;
+
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 100;
     }
 
     .header-item {
@@ -104,7 +110,7 @@
       justify-content: center;
       align-items: center;
       min-height: calc(100vh - 60px);
-      padding: 80px 1px;
+      padding: 120px 1px;
     }
 
     /* 回転するコンテナ */
@@ -122,6 +128,7 @@
       display: block;
       border-radius: 10px;
       overflow: hidden;
+      z-index: 50;
     }
 
     /* 回転ハンドル（上部中央、外側にはみ出す） */
