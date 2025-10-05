@@ -110,10 +110,6 @@
     /* 回転するコンテナ */
     #rotatable-container {
       position: relative;
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-      transition: transform 0.1s ease-out;
       overflow: visible;
     }
 
@@ -155,6 +151,17 @@
       font-size: 30px;
       color: white;
     }
+
+    .iframe-wrapper {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+      transition: transform 0.1s ease-out;
+    }
   </style>
 </head>
 <body>
@@ -165,7 +172,7 @@
       <span style="margin-left: 3px;">°</span>
     </div>
     
-    <button class="btn btn-reset" onclick="resetRotation()">Reset</button>
+    <button class="btn btn-reset" onclick="resetRotation()">Reset angle</button>
     
     <div class="separator"></div>
     
@@ -189,13 +196,21 @@
       <label>px</label>
     </div>
     
-    <button class="btn" onclick="applySize()">Apply</button>
+    <div class="separator"></div>
+    
+    <div class="header-item">
+      <label>Scale:</label>
+      <input type="number" id="scaleInput" value="1.0" min="0.1" max="3.0" step="0.1">
+      <label>×</label>
+    </div>
   </div>
 
   <div class="content-area">
     <div id="rotatable-container" style="width: 800px; height: 1080px;">
       <div class="rotation-handle"><img src="spinhandle.svg" width="42px"></div>
-      <iframe id="website-frame" src="https://example.com"></iframe>
+      <div class="iframe-wrapper" style="width:100%; height:100%;">
+        <iframe id="website-frame" src="https://example.com"></iframe>
+      </div>
     </div>
   </div>
 
@@ -208,6 +223,8 @@
     const urlInput = document.getElementById('urlInput');
     const widthInput = document.getElementById('widthInput');
     const heightInput = document.getElementById('heightInput');
+    const scaleInput = document.getElementById('scaleInput');
+    const iframeWrapper = container.querySelector('.iframe-wrapper');
 
     // 状態管理
     let currentAngle = 0;
@@ -243,6 +260,14 @@
       if (height >= 100 && height <= 3000) {
         container.style.height = height + 'px';
       }
+    }
+
+    // スケール適用
+    function applyScale() {
+      let scale = parseFloat(scaleInput.value);
+      if (isNaN(scale) || scale < 0.1 || scale > 3.0) scale = 1.0;
+      iframeWrapper.style.transform = `scale(${scale})`;
+      iframeWrapper.style.transformOrigin = 'top center';
     }
 
     // コンテナの中心座標を取得
@@ -362,6 +387,13 @@
         }
       }
     });
+
+    // スケール入力の変更を監視してリアルタイム適用
+    scaleInput.addEventListener('input', applyScale);
+    scaleInput.addEventListener('change', applyScale);
+
+    // 初期化
+    applyScale();
   </script>
 </body>
 </html>
